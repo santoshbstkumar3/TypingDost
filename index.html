@@ -2,122 +2,216 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>TypingDost Web - Live Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypingDost Pro - Dark Mode Edition</title>
     <style>
-        :root { --primary: #E97900; --navy: #28364F; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
-        .card { background: white; width: 100%; max-width: 900px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { color: var(--primary); margin-top: 0; }
-        #display-text { font-size: 22px; background: #fafafa; border: 1px solid #ddd; padding: 25px; border-radius: 10px; margin-bottom: 20px; line-height: 1.8; text-align: left; min-height: 120px; color: #444; }
-        #input-area { width: 100%; font-size: 20px; padding: 15px; border: 2px solid var(--navy); border-radius: 8px; box-sizing: border-box; outline: none; }
-        .stats-bar { display: flex; justify-content: space-around; margin-top: 25px; padding: 15px; background: var(--navy); color: white; border-radius: 10px; font-size: 18px; }
-        .highlight-correct { color: #2ecc71; }
-        .highlight-wrong { color: #e74c3c; text-decoration: underline; }
+        :root { 
+            --primary: #E97900; 
+            --navy: #28364F; 
+            --bg: #f4f7f6; 
+            --white: #ffffff; 
+            --text-color: #444;
+            --box-bg: #fafafa;
+        }
+
+        /* Dark Mode Colors */
+        .dark-mode {
+            --bg: #1a1a1a;
+            --white: #2d2d2d;
+            --text-color: #e0e0e0;
+            --navy: #000000;
+            --box-bg: #333333;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; transition: 0.3s; color: var(--text-color); }
+        
+        header { 
+            width: 100%; background: var(--white); padding: 15px 0; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; 
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+        }
+        
+        .logo { font-size: 28px; font-weight: bold; color: var(--primary); }
+
+        .container { 
+            max-width: 900px; width: 95%; background: var(--white); 
+            padding: 25px; border-radius: 15px; margin: 20px auto;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05); 
+        }
+
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        select, button { padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; background: var(--white); color: var(--text-color); outline: none; }
+        
+        .btn-main { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
+
+        .scroll-controls { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 5px; }
+        .scroll-btn { padding: 5px 10px; font-size: 12px; cursor: pointer; background: var(--navy); color: white; border: none; }
+
+        #display-text { 
+            background: var(--box-bg); border: 2px solid #eee; padding: 20px; 
+            border-radius: 12px; font-size: 22px; line-height: 1.8; 
+            height: 200px; overflow-y: auto; scroll-behavior: smooth; 
+            margin-bottom: 15px; text-align: justify; white-space: pre-wrap;
+        }
+
+        .typing-container { background-color: var(--box-bg); border: 3px solid var(--navy); border-radius: 12px; padding: 15px; height: 100px; }
+        textarea { width: 100%; height: 100%; background: transparent; border: none; resize: none; font-size: 20px; outline: none; color: var(--text-color); }
+
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-item { background: var(--navy); color: white; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-item span { display: block; font-size: 24px; font-weight: bold; color: var(--primary); }
+
+        #result-page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; }
+        .result-card { max-width: 450px; margin: 100px auto; background: var(--white); border-radius: 20px; text-align: center; overflow: hidden; padding-bottom: 20px;}
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>TypingDost Online ⌨️</h1>
-    
-    <div style="margin-bottom: 20px;">
-        <select id="lang-select" style="padding: 8px; font-size: 16px;">
-            <option value="en">English Test</option>
+<header>
+    <div class="logo">TypingDost Pro 🚀</div>
+    <button onclick="toggleDarkMode()" style="cursor:pointer;">🌓 Mode</button>
+</header>
+
+<div class="container">
+    <div class="controls">
+        <select id="lang-select" onchange="updateLessonList()">
+            <option value="en">English</option>
             <option value="hi">Hindi Inscript</option>
         </select>
-        <button onclick="resetTest()" style="padding: 8px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Reset</button>
+        <select id="lesson-select" onchange="resetTest()"></select>
+        <select id="time-select" onchange="resetTest()">
+            <option value="1">1 Minute</option>
+            <option value="2">2 Minutes</option>
+            <option value="5">5 Minutes</option>
+            <option value="10">10 Minutes</option>
+            <option value="15">15 Minutes</option>
+        </select>
+        <button class="btn-main" onclick="resetTest()">Restart</button>
     </div>
 
     <div id="display-text">Loading...</div>
-    
-    <textarea id="input-area" placeholder="Typing shuru karein, timer apne aap start ho jayega..." rows="4"></textarea>
+
+    <div class="typing-container" id="input-box-container">
+        <textarea id="input-area" placeholder="Type Here......."></textarea>
+    </div>
 
     <div class="stats-bar">
-        <div>Time: <span id="timer">60</span>s</div>
-        <div>WPM: <span id="wpm">0</span></div>
-        <div>Accuracy: <span id="acc">0</span>%</div>
+        <div class="stat-item"><span id="timer">60</span>Time</div>
+        <div class="stat-item"><span id="wpm">0</span>WPM</div>
+        <div class="stat-item"><span id="acc">0</span>Acc %</div>
+    </div>
+</div>
+
+<div id="result-page">
+    <div class="result-card">
+        <div style="background:var(--navy); color:white; padding:20px;"><h2>Scorecard</h2></div>
+        <p style="font-size:20px;">Speed: <strong id="final-wpm" style="color:var(--primary);">0</strong> WPM</p>
+        <p style="font-size:20px;">Accuracy: <strong id="final-acc" style="color:#2ecc71;">0%</strong></p>
+        <button class="btn-main" style="width:80%; padding:12px;" onclick="location.reload()">Try Again</button>
     </div>
 </div>
 
 <script>
     const langSelect = document.getElementById('lang-select');
+    const lessonSelect = document.getElementById('lesson-select');
     const inputArea = document.getElementById('input-area');
     const displayText = document.getElementById('display-text');
-    const timerLbl = document.getElementById('timer');
-    const wpmLbl = document.getElementById('wpm');
-    const accLbl = document.getElementById('acc');
-
-    let timeAllowed = 60;
-    let timeLeft = timeAllowed;
-    let timerRunning = false;
-    let interval = null;
+    
+    let timeLeft, timerRunning = false, interval = null;
 
     const inscriptMap = {'q':'ौ','w':'ै','e':'ा','r':'ी','t':'ू','y':'ब','u':'ह','i':'ग','o':'द','p':'ज','a':'ो','s':'े','d':'्','f':'ि','g':'ु','h':'प','j':'र','k':'क','l':'त',';':'च','z':'़','x':'ं','c':'म','v':'न','b':'व','n':'ल','m':'स',',':'य','.':'।',' ':' '};
-    const passages = {
-        en: "The quick brown fox jumps over the lazy dog. Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        hi: "भारत एक महान देश है। यहाँ की मिट्टी में वीरता और प्रेम की कहानियाँ बसी हैं। हमें अपने देश पर गर्व होना चाहिए।"
+
+    const lessons = {
+        en: [
+            { title: "Lesson 1: Nature", text: `Nature is the beautiful and essential force that sustains life on Earth. It encompasses everything around us, from the towering trees and vast oceans to the smallest insects and flowers. The harmony of nature ensures the balance of ecosystems and provides the resources necessary for all living beings to thrive. Our environment offers clean air, water, and food, while also serving as a source of inspiration and peace. As we experience the beauty of nature, we realise how interconnected everything is, and how important it is to protect and preserve it for future generations.
+If not for nature then we wouldn’t be alive. The health benefits of nature for humans are incredible. The most important thing for survival given by nature is oxygen. The entire cycle of respiration is regulated by nature. The oxygen that we inhale is given by trees and the carbon dioxide we exhale is getting absorbed by trees. The ecosystem of nature is a community in which producers (plants), consumers, and decomposers work together in their environment for survival. The natural fundamental processes like soil creation, photosynthesis, nutrient cycling, and water cycling, allow Earth to sustain life. We are dependent on these ecosystem services daily whether or not we are aware. Nature provides us services round the clock: provisional services, regulating services, and non-material services. Provisional services include benefits extracted from nature such as food, water, natural fuels and fibres, and medicinal plants. Regulating services include regulation of natural processes that include decomposition, water purification, pollution, erosion and flood control, and also, climate regulation. Non-material services are the non-material benefits that improve the cultural development of humans such as recreation, creative inspiration from interaction with nature like art, music, architecture, and the influence of ecosystems on local and global cultures.` },
+
+            { title: "Lesson 2: Stress", text: `A stressful situation — whether something environmental, such as a looming work deadline, or psychological, such as persistent worry about losing a job — can trigger a cascade of stress hormones that produce well-orchestrated physiological changes. A stressful incident can make the heart pound and breathing quicken. Muscles tense and beads of sweat appear. This combination of reactions to stress is also known as the "fight-or-flight" response because it evolved as a survival mechanism, enabling people and other mammals to react quickly to life-threatening situations. The carefully orchestrated yet near-instantaneous sequence of hormonal changes and physiological responses helps someone to fight the threat off or flee to safety. Unfortunately, the body can also overreact to stressors that are not life-threatening, such as traffic jams, work pressure, and family difficulties. Over the years, researchers have learned not only how and why these reactions occur, but have also gained insight into the long-term effects chronic stress has on physical and psychological health. Over time, repeated activation of the stress response takes a toll on the body. Research suggests that chronic stress contributes to high blood pressure, promotes the formation of artery-clogging deposits, and causes brain changes that may contribute to anxiety, depression, and addiction. More preliminary research suggests that chronic stress may also contribute to obesity, both through direct mechanisms (causing people to eat more) or indirectly (decreasing sleep and exercise).` }
+        ],
+        hi: [
+            { title: "पाठ 1: भारत", text: `'अतिथि देवो भव' - यह सबसे प्रसिद्ध कहावत है जिसका अर्थ है अतिथि भगवान के समान होते हैं और यह भारतीय परंपरा और संस्कृति की भावना को दर्शाती है जब वे अपने अतिथियों का स्वागत करते हैं। यह वास्तव में भारत की समृद्ध सांस्कृतिक विरासत और गर्मजोशी भरी मेहमाननवाजी को प्रतिबिंबित करता है। पांच हजार साल से भी अधिक पुरानी सभ्यता के साथ, भारत विविधता का एक अद्भुत खजाना है। भारत उत्तर में हिमालय की शाश्वत बर्फ से लेकर दक्षिण के प्रायद्वीपों तक, पश्चिम के शुष्क रेगिस्तान से लेकर पूर्व के आर्द्र डेल्टाओं तक, मध्य पठार की शुष्क गर्मी और ठंड से लेकर ठंडी वन तलहटी और सुनहरे समुद्र तटों तक फैला हुआ है। इस प्रकार, यह एक पर्यटक को आनंद लेने और घूमने के लिए स्थलों का एक अविश्वसनीय विकल्प प्रदान करता है। भारत की सभ्यता पाँच हज़ार साल से भी अधिक पुरानी है। भारत के पास विश्व का सबसे बड़ा संविधान और सबसे बड़ा लोकतंत्र है। भारत एक ऐसा देश है जिसे विविध धर्मों, भाषाओं, नस्लों, संस्कृतियों, वनस्पतियों और जीव-जंतुओं आदि पर गर्व है। चीन के बाद विश्व का दूसरा सबसे अधिक आबादी वाला देश, भारत में उनतीस राज्य, बाईस भाषाएँ, अनेक धर्म और गंगा, सिंधु, ब्रह्मपुत्र आदि जैसी कई नदियाँ बहती हैं। इसकी विविधता ही देश का सार है। कमल भारत का राष्ट्रीय फूल है। बाघ राष्ट्रीय पशु है और सुंदर मोर राष्ट्रीय पक्षी है। भारत में हिंदू धर्म, सिख धर्म और बौद्ध धर्म जैसे कई धर्मों का उद्गम हुआ है। इसके अलावा, इस्लाम, ईसाई धर्म और पारसी धर्म जैसे कई विदेशी धर्म भी यहाँ प्रचलित हैं। प्रत्येक धर्म देश की संस्कृति और वास्तुकला को प्रभावित करता है। उदाहरण के लिए, गोवा में पुर्तगाली संस्कृति की झलक मिलती है, जहाँ शहर भर में गिरजाघर बने हुए हैं। इसी प्रकार, उत्तर प्रदेश राज्य के कई शहरों में इस्लामी संस्कृति का प्रभाव स्पष्ट रूप से दिखाई देता है।सूर्य मंदिर, खजुराहो मंदिर और कई अन्य मंदिर देश में प्राचीन हिंदू धर्म की छाप छोड़ते हैं। धर्मों की इस व्यापक विविधता के साथ, भारत हर साल होली, दिवाली, ईद, क्रिसमस, गुरु नानक जयंती आदि जैसे अनेक त्योहार मनाता है। विभिन्न धर्मों द्वारा मनाए जाने वाले ये त्योहार पूरे देश को अपने चमकीले रंगों से रंग देते हैं। भारत का संविधान बाईस भाषाओं को मान्यता देता है। इन भाषाओं की उपभाषाएँ भी हैं। देश की व्यापक भाषाई विविधता को एकजुट करने के लिए हिंदी को आधिकारिक भाषा के रूप में मान्यता दी गई है।भारत को अपनी भौगोलिक विविधता पर भी गर्व है। जहाँ जम्मू और कश्मीर जैसा उत्तरी राज्य पूरी तरह से हिमालयी पर्वतीय क्षेत्रों से घिरा है, वहीं राजस्थान राज्य पूरी तरह से रेगिस्तानी क्षेत्रों से आबाद है। केरल और गोवा तटीय क्षेत्र हैं, जबकि दिल्ली, पंजाब, उत्तर प्रदेश और कई अन्य राज्य मैदानी इलाके हैं।भारत की एक और गौरवशाली विशेषता इसकी नस्लीय विविधता है। हम सभी इंडो-आर्यन जातीय प्रवास के बारे में जानते हैं, लेकिन इसके अलावा, पूर्वोत्तर में मंगोलॉयड, दक्षिण में द्रविड़ और ईरानी मूल के लोग भी मौजूद हैं, क्योंकि भारत में पारसियों की एक अच्छी खासी आबादी रहती है।भारत विविध जलवायु परिस्थितियों वाला देश है। देश के अधिकांश हिस्सों में ग्रीष्म, शरद, शीत और वसंत ऋतुएँ पूरे वर्ष बनी रहती हैं। चेरापुंजी और मॉसिनराम जैसे स्थानों पर पूरे वर्ष सबसे अधिक वर्षा होती है। इसके अलावा, देश के उत्तर में हिमालयी क्षेत्र है, जो सीमा का काम करने के साथ-साथ साइबेरिया की भीषण ठंडी हवाओं के लिए एक प्राकृतिक अवरोधक का भी काम करता है। मुंबई, दमन दीव और कोलकाता जैसे तटीय क्षेत्रों में पूरे वर्ष उष्णकटिबंधीय गर्म जलवायु रहती है।दक्षिण में हिंद महासागर, पश्चिम में अरब सागर और पूर्व की ओर भारत की मुख्य भूमि पर बंगाल की खाड़ी स्थित है। देश पश्चिम में पाकिस्तान, उत्तर में भूटान, पीपुल्स रिपब्लिक ऑफ चाइना और नेपाल तथा पूर्व में बांग्लादेश और बर्मा से घिरा हुआ है।` },
+
+            { title: "पाठ 2: योग", text: `योग स्वस्थ जीवन जीने की कला और विज्ञान है। यह एक आध्यात्मिक अनुशासन है जो एक अत्यंत सूक्ष्म विज्ञान पर आधारित है और मन और शरीर के बीच सामंजस्य स्थापित करने पर केंद्रित है। योग का समग्र दृष्टिकोण जीवन के सभी पहलुओं में सामंजस्य लाता है। योग रोगों की रोकथाम, स्वास्थ्य संवर्धन और जीवनशैली से संबंधित कई विकारों के प्रबंधन के लिए भी जाना जाता है। योग पर इस निबंध के माध्यम से, छात्र योग के महत्व और लाभों को जानेंगे। इस निबंध को पढ़कर , छात्रों को अंग्रेजी में योग पर एक प्रभावी निबंध लिखने के विभिन्न तरीके मिलेंगे, जिससे वे लेखन अनुभाग में पूरे अंक प्राप्त कर सकेंगे। योग शब्द का शाब्दिक अर्थ है "जोड़ना" या "मिलन"। योग मात्र शारीरिक व्यायाम का अभ्यास नहीं है, बल्कि यह व्यक्ति की चेतना और अनंत सार्वभौमिक चेतना का मिलन है। योग मन की प्रकृति की खोज की एक विधि है, जो अभ्यास और प्रत्यक्ष अनुभव पर बल देती है। योग शरीर, मन और आत्मा के विकास के लिए एक सामंजस्यपूर्ण प्रणाली पर आधारित एक प्राचीन कला है। योग व्यक्तित्व के उच्चतम स्तर के एकीकरण का प्रतीक है। इसमें योग साहित्य में वर्णित विभिन्न अभ्यास और तकनीकें शामिल हैं, जिन्हें सामूहिक रूप से 'योग' कहा जाता है। योग बच्चों के शारीरिक, मानसिक और भावनात्मक स्वास्थ्य के लिए सकारात्मक और स्वस्थ जीवनशैली को बढ़ावा देता है। योग शारीरिक स्तर पर शक्ति, सहनशक्ति, धीरज और ऊर्जा के विकास में सहायक होता है। यह मानसिक स्तर पर एकाग्रता, शांति, सुकून और संतोष प्रदान करता है, जिससे आंतरिक और बाहरी सामंजस्य स्थापित होता है। योग की सहायता से आप दैनिक तनाव और उसके दुष्परिणामों को नियंत्रित कर सकते हैं योग शरीर को स्थिरता प्रदान करता है और मन को शांत करता है। यह शरीर के जोड़ों, स्नायुबंधन और टेंडनों में चिकनाई बढ़ाता है। चिकित्सा क्षेत्र में हुए अध्ययनों से पता चलता है कि योग एकमात्र ऐसा शारीरिक व्यायाम है जो शरीर को संपूर्ण रूप से तरोताज़ा करता है, क्योंकि यह सभी आंतरिक अंगों और ग्रंथियों की मालिश करता है। यह कई बीमारियों के खतरे को कम करता है। नियमित रूप से योग का अभ्यास करने वाले किसी भी व्यक्ति के जीवनशैली में स्थायी सकारात्मक बदलाव आ सकता है। योग संपूर्ण स्वास्थ्य और शारीरिक चुस्ती सुनिश्चित करने का एक उत्तम तरीका है। योग के शारीरिक आधार आसन और श्वास हैं। ध्यान और प्राणायाम के माध्यम से आप तनाव से मुक्ति पाकर स्वस्थ जीवन जी सकते हैं। वास्तव में, यह पुरानी बीमारियों के इलाज के लिए मानव जाति द्वारा ज्ञात सर्वोत्तम उपायों में से एक है, जिनका इलाज अन्य दवाओं से संभव नहीं होता। पीठ दर्द और गठिया से पीड़ित लोगों को अक्सर ऐसे आसन करने की सलाह दी जाती है जो शरीर के विशिष्ट स्थानों पर मांसपेशियों के व्यायाम पर केंद्रित होते हैं। प्राणायाम फेफड़ों की क्षमता बढ़ाने के लिए सर्वोत्तम श्वास व्यायाम हैं। सांस के साथ तालमेल बिठाकर किए जाने वाले आसनों की श्रृंखला शरीर के हर अंग को लाभ पहुंचाती है। योग से शक्ति, सहनशक्ति, लचीलापन और संतुलन बढ़ता है। यह गतिविधियों को करने की क्षमता को बढ़ाता है, अधिक ऊर्जा प्रदान करता है और आरामदायक नींद देता है। रोजाना योग करने से मांसपेशियों की ताकत बढ़ती है। विभिन्न आसन शरीर को अधिक लचीला बनाते हैं। इसके अलावा, योग उपास्थि और जोड़ों के टूटने से बचाता है, रक्त प्रवाह बढ़ाता है और रक्त शर्करा को कम करता है। योग का सबसे महत्वपूर्ण लाभ तनाव, थकान से राहत दिलाने और स्फूर्ति और स्फूर्ति प्रदान करने में इसका उपयोग है। योग रोग प्रतिरोधक क्षमता बढ़ाता है और मन को शांति देता है। योग की सबसे अद्भुत बात यह है कि इसके सकारात्मक प्रभाव स्वास्थ्य और मन पर समय के साथ दिखने लगते हैं। योग की एक और विशेषता इसके आसनों की विस्तृत श्रृंखला है। अपनी क्षमता और समग्र स्वास्थ्य के अनुसार, आप हल्के प्राणायामों और आसनों से लेकर उच्च तीव्रता वाले आसनों तक का चुनाव कर सकते हैं। यह बिना दवाइयों के उपचार का एक कारगर तरीका है। इसके अलावा, नियमित रूप से योग का अभ्यास करने से कोई दुष्प्रभाव नहीं दिखाई देते। आपको बस अपने शरीर की क्षमता और संरचना के अनुसार सबसे उपयुक्त आसनों का ज्ञान होना चाहिए। साथ ही, आपको आसनों को करने का सही तरीका सीखना चाहिए क्योंकि गलत प्रयास से मोच और चोट लग सकती है।` }
+        ]
     };
+
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+
+    function manualScroll(amt) { displayText.scrollTop += amt; }
+
+    function updateLessonList() {
+        const lang = langSelect.value;
+        lessonSelect.innerHTML = lessons[lang].map((l, i) => `<option value="${i}">${l.title}</option>`).join('');
+        resetTest();
+    }
 
     function resetTest() {
         clearInterval(interval);
-        timeLeft = timeAllowed;
-        timerRunning = false;
+        const lang = langSelect.value;
+        const lessonIdx = lessonSelect.value || 0;
+        displayText.innerText = lessons[lang][lessonIdx].text;
+        timeLeft = document.getElementById('time-select').value * 60;
+        document.getElementById('timer').innerText = timeLeft;
+        document.getElementById('wpm').innerText = "0";
+        document.getElementById('acc').innerText = "0";
         inputArea.value = "";
         inputArea.disabled = false;
-        timerLbl.innerText = timeLeft;
-        wpmLbl.innerText = "0";
-        accLbl.innerText = "0";
-        displayText.innerText = passages[langSelect.value];
+        timerRunning = false;
+        displayText.scrollTop = 0;
     }
 
     function startTimer() {
         timerRunning = true;
         interval = setInterval(() => {
             timeLeft--;
-            timerLbl.innerText = timeLeft;
-            calculateStats();
-            if (timeLeft <= 0) {
-                clearInterval(interval);
-                inputArea.disabled = true;
-                alert("Test Completed!");
-            }
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) { clearInterval(interval); showResult(); }
         }, 1000);
     }
 
     function calculateStats() {
-        const typed = inputArea.value.trim();
-        const original = displayText.innerText.substring(0, typed.length);
+        const typed = inputArea.value;
+        const originalText = displayText.innerText;
+        const original = originalText.substring(0, typed.length);
         
-        // WPM Calculation
-        const words = typed.length / 5;
-        const timePassed = (timeAllowed - timeLeft) / 60;
-        const wpm = timePassed > 0 ? Math.round(words / timePassed) : 0;
-        wpmLbl.innerText = wpm;
-
-        // Accuracy
-        let correct = 0;
-        for (let i = 0; i < typed.length; i++) {
-            if (typed[i] === original[i]) correct++;
+        // Auto-scroll logic
+        if (typed.length / originalText.length > 0.1) {
+            displayText.scrollTop = (displayText.scrollHeight * (typed.length / originalText.length)) - 60;
         }
-        const acc = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 0;
-        accLbl.innerText = acc;
+
+        const timeMin = (document.getElementById('time-select').value * 60 - timeLeft) / 60;
+        document.getElementById('wpm').innerText = timeMin > 0 ? Math.round((typed.length/5)/timeMin) : 0;
+        
+        let correct = 0;
+        for(let i=0; i<typed.length; i++) if(typed[i] === original[i]) correct++;
+        document.getElementById('acc').innerText = typed.length > 0 ? Math.round((correct/typed.length)*100) : 0;
+        
+        document.getElementById('input-box-container').style.border = (typed === original) ? "3px solid #2ecc71" : "3px solid #e74c3c";
     }
 
     inputArea.addEventListener('keydown', function(e) {
-        if (!timerRunning && e.key !== "Tab") startTimer();
-
-        if (langSelect.value === 'hi' && e.key.length === 1) {
+        if (!timerRunning && e.key.length === 1) startTimer();
+        if (langSelect.value === 'hi' && e.key.length === 1 && !e.ctrlKey) {
             e.preventDefault();
-            const char = inscriptMap[e.key];
-            if (char) this.value += char;
-            calculateStats();
+            const char = inscriptMap[e.key.toLowerCase()];
+            if (char) {
+                const start = this.selectionStart;
+                this.value = this.value.substring(0, start) + char + this.value.substring(this.selectionEnd);
+                this.selectionStart = this.selectionEnd = start + 1;
+                calculateStats();
+            }
         }
     });
 
-    inputArea.addEventListener('input', calculateStats);
-    langSelect.onchange = resetTest;
-    window.onload = resetTest;
+    function showResult() {
+        inputArea.disabled = true;
+        document.getElementById('final-wpm').innerText = document.getElementById('wpm').innerText;
+        document.getElementById('final-acc').innerText = document.getElementById('acc').innerText + "%";
+        document.getElementById('result-page').style.display = 'block';
+    }
 
+    inputArea.addEventListener('input', calculateStats);
+    window.onload = updateLessonList;
 </script>
 </body>
 </html>
