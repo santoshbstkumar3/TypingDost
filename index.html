@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>TypingDost Online</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; text-align: center; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        h1 { color: #E97900; }
+        #display-text { font-size: 24px; background: #eee; padding: 20px; border-radius: 10px; margin-bottom: 20px; min-height: 100px; line-height: 1.6; }
+        #input-area { width: 90%; font-size: 22px; padding: 15px; border: 2px solid #28364F; border-radius: 8px; }
+        .stats { margin-top: 20px; font-weight: bold; color: #28364F; }
+        select { padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>TypingDost Web 🚀</h1>
+    
+    <select id="lang-select">
+        <option value="en">English Typing</option>
+        <option value="hi">Hindi Inscript</option>
+    </select>
+
+    <div id="display-text">Type this text to start the test...</div>
+    
+    <textarea id="input-area" placeholder="Start typing here..." rows="3"></textarea>
+
+    <div class="stats">
+        Time: <span id="timer">60</span>s | WPM: <span id="wpm">0</span> | Accuracy: <span id="acc">0</span>%
+    </div>
+</div>
+
+<script>
+    const langSelect = document.getElementById('lang-select');
+    const inputArea = document.getElementById('input-area');
+    const displayText = document.getElementById('display-text');
+    
+    // Hindi Mapping (Same as your Python Logic)
+    const inscriptMap = {'q':'ौ','w':'ै','e':'ा','r':'ी','t':'ू','y':'ब','u':'ह','i':'ग','o':'द','p':'ज','a':'ो','s':'े','d':'्','f':'ि','g':'ु','h':'प','j':'र','k':'क','l':'त',';':'च','z':'़','x':'ं','c':'म','v':'न','b':'व','n':'ल','m':'स',',':'य','.':'।',' ':' '};
+
+    const passages = {
+        en: "The quick brown fox jumps over the lazy dog.",
+        hi: "भारत एक महान देश है और यहाँ की संस्कृति बहुत पुरानी है।"
+    };
+
+    // Change passage when language changes
+    langSelect.onchange = () => {
+        displayText.innerText = passages[langSelect.value];
+        inputArea.value = "";
+    };
+
+    // Hindi Inscript Logic for Web
+    inputArea.addEventListener('keypress', function(e) {
+        if(langSelect.value === 'hi') {
+            e.preventDefault();
+            const char = inscriptMap[e.key];
+            if(char) {
+                this.value += char;
+            }
+        }
+    });
+
+    // Default load
+    displayText.innerText = passages.en;
+</script>
+
+</body>
+</html>
