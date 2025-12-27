@@ -2,33 +2,40 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>TypingDost Online</title>
+    <title>TypingDost Web - Live Test</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; text-align: center; padding: 50px; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
-        h1 { color: #E97900; }
-        #display-text { font-size: 24px; background: #eee; padding: 20px; border-radius: 10px; margin-bottom: 20px; min-height: 100px; line-height: 1.6; }
-        #input-area { width: 90%; font-size: 22px; padding: 15px; border: 2px solid #28364F; border-radius: 8px; }
-        .stats { margin-top: 20px; font-weight: bold; color: #28364F; }
-        select { padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        :root { --primary: #E97900; --navy: #28364F; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+        .card { background: white; width: 100%; max-width: 900px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary); margin-top: 0; }
+        #display-text { font-size: 22px; background: #fafafa; border: 1px solid #ddd; padding: 25px; border-radius: 10px; margin-bottom: 20px; line-height: 1.8; text-align: left; min-height: 120px; color: #444; }
+        #input-area { width: 100%; font-size: 20px; padding: 15px; border: 2px solid var(--navy); border-radius: 8px; box-sizing: border-box; outline: none; }
+        .stats-bar { display: flex; justify-content: space-around; margin-top: 25px; padding: 15px; background: var(--navy); color: white; border-radius: 10px; font-size: 18px; }
+        .highlight-correct { color: #2ecc71; }
+        .highlight-wrong { color: #e74c3c; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>TypingDost Web 🚀</h1>
+<div class="card">
+    <h1>TypingDost Online ⌨️</h1>
     
-    <select id="lang-select">
-        <option value="en">English Typing</option>
-        <option value="hi">Hindi Inscript</option>
-    </select>
+    <div style="margin-bottom: 20px;">
+        <select id="lang-select" style="padding: 8px; font-size: 16px;">
+            <option value="en">English Test</option>
+            <option value="hi">Hindi Inscript</option>
+        </select>
+        <button onclick="resetTest()" style="padding: 8px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Reset</button>
+    </div>
 
-    <div id="display-text">Type this text to start the test...</div>
+    <div id="display-text">Loading...</div>
     
-    <textarea id="input-area" placeholder="Start typing here..." rows="3"></textarea>
+    <textarea id="input-area" placeholder="Typing shuru karein, timer apne aap start ho jayega..." rows="4"></textarea>
 
-    <div class="stats">
-        Time: <span id="timer">60</span>s | WPM: <span id="wpm">0</span> | Accuracy: <span id="acc">0</span>%
+    <div class="stats-bar">
+        <div>Time: <span id="timer">60</span>s</div>
+        <div>WPM: <span id="wpm">0</span></div>
+        <div>Accuracy: <span id="acc">0</span>%</div>
     </div>
 </div>
 
@@ -36,35 +43,81 @@
     const langSelect = document.getElementById('lang-select');
     const inputArea = document.getElementById('input-area');
     const displayText = document.getElementById('display-text');
-    
-    // Hindi Mapping (Same as your Python Logic)
+    const timerLbl = document.getElementById('timer');
+    const wpmLbl = document.getElementById('wpm');
+    const accLbl = document.getElementById('acc');
+
+    let timeAllowed = 60;
+    let timeLeft = timeAllowed;
+    let timerRunning = false;
+    let interval = null;
+
     const inscriptMap = {'q':'ौ','w':'ै','e':'ा','r':'ी','t':'ू','y':'ब','u':'ह','i':'ग','o':'द','p':'ज','a':'ो','s':'े','d':'्','f':'ि','g':'ु','h':'प','j':'र','k':'क','l':'त',';':'च','z':'़','x':'ं','c':'म','v':'न','b':'व','n':'ल','m':'स',',':'य','.':'।',' ':' '};
-
     const passages = {
-        en: "The quick brown fox jumps over the lazy dog.",
-        hi: "भारत एक महान देश है और यहाँ की संस्कृति बहुत पुरानी है।"
+        en: "The quick brown fox jumps over the lazy dog. Success is not final, failure is not fatal: it is the courage to continue that counts.",
+        hi: "भारत एक महान देश है। यहाँ की मिट्टी में वीरता और प्रेम की कहानियाँ बसी हैं। हमें अपने देश पर गर्व होना चाहिए।"
     };
 
-    // Change passage when language changes
-    langSelect.onchange = () => {
-        displayText.innerText = passages[langSelect.value];
+    function resetTest() {
+        clearInterval(interval);
+        timeLeft = timeAllowed;
+        timerRunning = false;
         inputArea.value = "";
-    };
+        inputArea.disabled = false;
+        timerLbl.innerText = timeLeft;
+        wpmLbl.innerText = "0";
+        accLbl.innerText = "0";
+        displayText.innerText = passages[langSelect.value];
+    }
 
-    // Hindi Inscript Logic for Web
-    inputArea.addEventListener('keypress', function(e) {
-        if(langSelect.value === 'hi') {
+    function startTimer() {
+        timerRunning = true;
+        interval = setInterval(() => {
+            timeLeft--;
+            timerLbl.innerText = timeLeft;
+            calculateStats();
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                inputArea.disabled = true;
+                alert("Test Completed!");
+            }
+        }, 1000);
+    }
+
+    function calculateStats() {
+        const typed = inputArea.value.trim();
+        const original = displayText.innerText.substring(0, typed.length);
+        
+        // WPM Calculation
+        const words = typed.length / 5;
+        const timePassed = (timeAllowed - timeLeft) / 60;
+        const wpm = timePassed > 0 ? Math.round(words / timePassed) : 0;
+        wpmLbl.innerText = wpm;
+
+        // Accuracy
+        let correct = 0;
+        for (let i = 0; i < typed.length; i++) {
+            if (typed[i] === original[i]) correct++;
+        }
+        const acc = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 0;
+        accLbl.innerText = acc;
+    }
+
+    inputArea.addEventListener('keydown', function(e) {
+        if (!timerRunning && e.key !== "Tab") startTimer();
+
+        if (langSelect.value === 'hi' && e.key.length === 1) {
             e.preventDefault();
             const char = inscriptMap[e.key];
-            if(char) {
-                this.value += char;
-            }
+            if (char) this.value += char;
+            calculateStats();
         }
     });
 
-    // Default load
-    displayText.innerText = passages.en;
-</script>
+    inputArea.addEventListener('input', calculateStats);
+    langSelect.onchange = resetTest;
+    window.onload = resetTest;
 
+</script>
 </body>
 </html>
